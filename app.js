@@ -62,21 +62,6 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .domain(catergorical)
         .range(d3.schemeSet2);
 
-    // Add X axis 
-
-    var xScale = d3.scaleBand()
-        .range([0, width])
-        .padding(0.2);
-    var xAxis = svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-
-    // add yaxis
-
-    var yScale = d3.scaleLinear()
-        .range([height, 0])
-    var yAxis = svg.append("g")
-        .attr("class", "myYaxis")
-
     update("generationCounts")
 
     // A function that update the chart
@@ -96,15 +81,13 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             title.text(`Histogram of ${isSideways ? `${selectedGroup.slice(0, -6)} vs Frequency` : `Frequency vs ${selectedGroup.slice(0, -6)}`}`);
         }
 
-        //title.text(`${isSideways ? "Bar Plot of" : "Histogram of"} ${selectedGroup.slice(0, -6)} vs Frequency`);
-
         // Update x-axis label to the selected group
         svg.selectAll(".x-axis-label").remove(); // Remove existing X axis label
         svg.append("text")
             .attr("class", "x-axis-label")
             .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
             .style("text-anchor", "middle")
-            .text(isSideways?"Frequency":selectedGroup)
+            .text(isSideways ? "Frequency" : selectedGroup)
             .attr("dy", "1em");
 
         // Update y-axis label to "Frequency"
@@ -116,45 +99,111 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text(isSideways? selectedGroup:"Frequency");
+            .text(isSideways ? selectedGroup : "Frequency");
 
-        xScale
-            .domain(Array.from(eval(selectedGroup).keys()).sort())
-        xAxis
-            .transition().duration(1000)
-            .call(d3.axisBottom(xScale))
-            .selectAll("text")
-            .attr("y", 0)
-            .attr("x", 9)
-            .attr("transform", "rotate(45)")
-            .style("text-anchor", "start");
+        var xScale, xAxis, yScale, yAxis;
 
-        yScale
-            .domain([0, d3.max(eval(selectedGroup).values())])
+        svg.selectAll(".Xaxis, .myYaxis").remove();
 
-        yAxis
-            .transition().duration(1000)
-            .call(d3.axisLeft(yScale))
+        if (isSideways) {
+            xScale = d3.scaleLinear()
+                .range([0, width])
+                .domain([0, d3.max(eval(selectedGroup).values())])
+            xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "Xaxis")
+                .transition().duration(1000)
+                .call(d3.axisBottom(xScale))
 
-        var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
+            yScale = d3.scaleBand()
+                .range([height, 0])
+                .domain(Array.from(eval(selectedGroup).keys()).sort())
+                .padding(0.2);
+            yAxis = svg.append("g")
+                .transition().duration(1000)
+                .attr("class", "myYaxis")
+                .call(d3.axisLeft(yScale))
 
-        bars.exit()
-            .transition()
-            .duration(500)
-            .attr("height", 0)
-            .remove();
+            var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
 
-        // Update the remaining bars
-        bars.enter()
-            .append("rect")
-            .merge(bars)
-            .transition()
-            .duration(1000)
-            .attr("x", d => xScale(d[0]))
-            .attr("y", d => yScale(d[1]))
-            .attr("width", xScale.bandwidth())
-            .attr("height", d => height - yScale(d[1]))
-            .attr("fill", function (d) { return myColor(selectedGroup.slice(0, -6)) });
+            bars.exit()
+                .transition()
+                .duration(500)
+                .attr("height", 0)// sus
+                .remove();
+
+            // Update the remaining bars
+            bars.enter()
+                .append("rect")
+                .merge(bars)
+                .transition()
+                .duration(1000)
+                .attr("x", 0)
+                .attr("y", d => yScale(d[0]))
+                .attr("width", d => xScale(d[1]))
+                .attr("height", yScale.bandwidth())//d => height - yScale(d[1]))
+                .attr("fill", function (d) { return myColor(selectedGroup.slice(0, -6)) });
+
+            
+        }
+        else {
+
+
+            // Add X axis 
+
+            xScale = d3.scaleBand()
+                .range([0, width])
+                .padding(0.2);
+            xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "Xaxis")
+
+            // add yaxis
+
+            yScale = d3.scaleLinear()
+                .range([height, 0])
+            yAxis = svg.append("g")
+                .attr("class", "myYaxis")
+
+
+            xScale
+                .domain(Array.from(eval(selectedGroup).keys()).sort())
+            xAxis
+                .transition().duration(1000)
+                .call(d3.axisBottom(xScale))
+                .selectAll("text")
+                .attr("y", 0)
+                .attr("x", 9)
+                .attr("transform", "rotate(45)")
+                .style("text-anchor", "start");
+
+            yScale
+                .domain([0, d3.max(eval(selectedGroup).values())])
+
+            yAxis
+                .transition().duration(1000)
+                .call(d3.axisLeft(yScale))
+
+            var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
+
+            bars.exit()
+                .transition()
+                .duration(500)
+                .attr("height", 0)
+                .remove();
+
+            // Update the remaining bars
+            bars.enter()
+                .append("rect")
+                .merge(bars)
+                .transition()
+                .duration(1000)
+                .attr("x", d => xScale(d[0]))
+                .attr("y", d => yScale(d[1]))
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => height - yScale(d[1]))
+                .attr("fill", function (d) { return myColor(selectedGroup.slice(0, -6)) });
+        }
     }
 
     // When the button is changed, run the updateChart function
