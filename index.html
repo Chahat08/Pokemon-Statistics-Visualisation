@@ -1,17 +1,32 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="style.css" />
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<h1>Hello, World</h1>
-<h2 id="field">Generation</h2>
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v6.js"></script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Your Visualization</title>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8">
+                <h1>Hello, World</h1>
+                <h2 id="field">Generation</h2>
+                <!-- Initialize a select button -->
+                <select id="selectButton" class="form-control"></select>
+                <!-- Add a toggle button -->
+                <button id="toggleButton" class="btn btn-primary mt-3">Toggle Orientation</button>
+                <!-- Create a div where the graph will take place -->
+                <div id="my_dataviz" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
 
-<!-- Initialize a select button -->
-<select id="selectButton"></select>
-
-<!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
-
-<script language="javascript" type="text/javascript" src="app.js"></script>
-
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <!-- Your JavaScript file -->
+    <script language="javascript" type="text/javascript" src="app.js"></script>
+</body>
+</html>

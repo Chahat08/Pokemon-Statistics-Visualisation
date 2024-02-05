@@ -1,11 +1,13 @@
-// set the dimensions and margins of the graph
-//const margin = { top: 30, right: 100, bottom: 70, left: 70 }, // Adjusted margins to make room for labels
-//    width = 460 - margin.left - margin.right,
-//    height = 400 - margin.top - margin.bottom;
+// Adjusted margins for better spacing
+const margin = { top: 50, right: 50, bottom: 70, left: 50 };
 
-const margin = { top: 50, right: 100, bottom: 70, left: 70 }, // Adjusted margins for better spacing
-    width = window.innerWidth - margin.left - margin.right - 20, // Adjusted width based on the window size
-    height = 500 - margin.top - margin.bottom; // Adjusted height for better spacing
+// Adjusted width based on the container size
+const containerWidth = document.querySelector(".container").clientWidth;
+const width = containerWidth - margin.left - margin.right - 20;
+
+// Adjusted height based on the container size
+const containerHeight = 500;
+const height = containerHeight - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
@@ -14,6 +16,12 @@ const svg = d3.select("#my_dataviz")
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
+
+const title = svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", -margin.top / 2)
+    .attr("text-anchor", "middle")
+    .style("font-size", "1.5em");
 
 //Read the data
 d3.csv("data/pokemon_data.csv").then(function (data) {
@@ -34,6 +42,20 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .append('option')
         .text(function (d) { return d; }) // text showed in the menu
         .attr("value", function (d) { return d+"Counts"; }) // corresponding value returned by the button
+
+    // TOGGLE ORIENTATION FUNCTIONALITY
+
+    let isSideways = false;
+
+    // Add an event listener to the toggle button
+    d3.select("#toggleButton").on("click", function () {
+        // Toggle the orientation state
+        isSideways = !isSideways;
+
+        // Call the update function with the current selected option
+        const selectedOption = d3.select("#selectButton").property("value");
+        update(selectedOption);
+    });
 
     // A color scale: one color for each group
     const myColor = d3.scaleOrdinal()
@@ -59,26 +81,30 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     // A function that update the chart
     function update(selectedGroup) {
-
         var isCategorical = false
+
         if (selectedGroup.endsWith("Counts")) {
             // is a categorical variable
             isCategorical = true
         }
         if (isCategorical) {
             d3.select("#field").text(selectedGroup.slice(0, -6) + ": Categorical");
+            title.text(`Bar Chart of ${isSideways ? `${selectedGroup.slice(0, -6)} vs Frequency` : `Frequency vs ${selectedGroup.slice(0, -6)}`}`);
         }
         else {
             d3.select("#field").text(selectedGroup + ": Numerical");
+            title.text(`Histogram of ${isSideways ? `${selectedGroup.slice(0, -6)} vs Frequency` : `Frequency vs ${selectedGroup.slice(0, -6)}`}`);
         }
+
+        //title.text(`${isSideways ? "Bar Plot of" : "Histogram of"} ${selectedGroup.slice(0, -6)} vs Frequency`);
 
         // Update x-axis label to the selected group
         svg.selectAll(".x-axis-label").remove(); // Remove existing X axis label
         svg.append("text")
             .attr("class", "x-axis-label")
-            .attr("transform", `translate(${width / 2}, ${height + margin.top + 20})`)
+            .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
             .style("text-anchor", "middle")
-            .text(selectedGroup)
+            .text(isSideways?"Frequency":selectedGroup)
             .attr("dy", "1em");
 
         // Update y-axis label to "Frequency"
@@ -90,7 +116,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Frequency");
+            .text(isSideways? selectedGroup:"Frequency");
 
         xScale
             .domain(Array.from(eval(selectedGroup).keys()).sort())
