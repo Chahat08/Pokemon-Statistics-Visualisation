@@ -36,6 +36,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     const numeric = ["attack", "defense", "speed", "sp_attack", "sp_defense", "hp", "percentage_male", "capture_rate", "base_happiness", "base_total", "base_egg_steps", "weight_kg", "height_m", "Number of votes", "Rank"]
 
+    
+
     // add the options to the button
     d3.select("#selectButtonCat")
         .selectAll('myOptions')
@@ -54,10 +56,30 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .text(function (d) { return d; }) // text showed in the menu
         .attr("value", function (d) { return d; }) // corresponding value returned by the button
 
-    // TOGGLE ORIENTATION FUNCTIONALITY
-
     let isSideways = false;
     let isCategorical = true;
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButtonCat").on("change", function (event, d) {
+        isCategorical = true;
+        // recover the option that has been chosen
+        const selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButtonNum").on("change", function (event, d) {
+        isCategorical = false;
+        // recover the option that has been chosen
+        const selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+
+    // TOGGLE ORIENTATION FUNCTIONALITY
+
+    
 
     // Add an event listener to the toggle button
     d3.select("#toggleButton").on("click", function () {
@@ -78,22 +100,229 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .domain(numeric)
         .range(d3.schemeSet1);
 
-    const TICKS = 70
+    const TICKS = 50
 
     update("generationCounts")
 
     // A function that update the chart
     function update(selectedGroup) {
+
+        //svg.select("*").remove()
+        addAxesLabels(selectedGroup) // add the axes labels
+        svg.selectAll(".xAxis, .yAxis").remove(); // remove the axes values
         
+        svg.selectAll("rect") // remove the bars of the bar plot and ths hist
+            .transition()
+            .duration(500)
+            .attr("height", 0)
+            .remove();
+
         if (isCategorical) {
-            d3.select("#field").text(selectedGroup.slice(0, -6) + ": Categorical");
-            title.text(`Bar Chart of ${isSideways ? `${selectedGroup.slice(0, -6)} vs Frequency` : `Frequency vs ${selectedGroup.slice(0, -6)}`}`);
+            drawBarPlot(selectedGroup)            
         }
         else {
-            d3.select("#field").text(selectedGroup + ": Numerical");
-            title.text(`Histogram of ${isSideways ? `${selectedGroup} vs Frequency` : `Frequency vs ${selectedGroup}`}`);
+            drawHistogram(selectedGroup)
+        }
+    }
+
+    function drawBarPlot(selectedGroup) {
+        // update the title of the graph to show that it is a bar plot
+        d3.select("#field").text(selectedGroup.slice(0, -6) + ": Categorical");
+        title.text(`Bar Chart of ${!isSideways ? `${selectedGroup.slice(0, -6)} vs Frequency` : `Frequency vs ${selectedGroup.slice(0, -6)}`}`);
+
+        var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
+
+        if (isSideways) {
+            xScale = d3.scaleLinear()
+                .range([0, width])
+                .domain([0, d3.max(eval(selectedGroup).values())])
+            xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "xAxis")
+                .transition().duration(1000)
+                .call(d3.axisBottom(xScale))
+
+            yScale = d3.scaleBand()
+                .range([height, 0])
+                .domain(Array.from(eval(selectedGroup).keys()).sort())
+                .padding(0.2);
+            yAxis = svg.append("g")
+                .transition().duration(1000)
+                .attr("class", "yAxis")
+                .call(d3.axisLeft(yScale))
+
+            // Update the remaining bars
+            bars.enter()
+                .append("rect")
+                .merge(bars)
+                .transition()
+                .duration(1000)
+                .attr("x", 0)
+                .attr("y", d => yScale(d[0]))
+                .attr("width", d => xScale(d[1]))
+                .attr("height", yScale.bandwidth())//d => height - yScale(d[1]))
+                .attr("fill", function (d) { return colorCategorical(selectedGroup.slice(0, -6)) });
+
+
+        }
+        else {
+
+
+            // Add X axis 
+
+            xScale = d3.scaleBand()
+                .range([0, width])
+                .padding(0.2);
+            xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "xAxis")
+
+            // add yaxis
+
+            yScale = d3.scaleLinear()
+                .range([height, 0])
+            yAxis = svg.append("g")
+                .attr("class", "yAxis")
+
+
+            xScale
+                .domain(Array.from(eval(selectedGroup).keys()).sort())
+            xAxis
+                .transition().duration(1000)
+                .call(d3.axisBottom(xScale))
+                .selectAll("text")
+                .attr("y", 0)
+                .attr("x", 9)
+                .attr("transform", "rotate(45)")
+                .style("text-anchor", "start");
+
+            yScale
+                .domain([0, d3.max(eval(selectedGroup).values())])
+
+            yAxis
+                .transition().duration(1000)
+                .call(d3.axisLeft(yScale))
+
+            // Update the remaining bars
+            bars.enter()
+                .append("rect")
+                .merge(bars)
+                .transition()
+                .duration(1000)
+                .attr("x", d => xScale(d[0]))
+                .attr("y", d => yScale(d[1]))
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => height - yScale(d[1]))
+                .attr("fill", function (d) { return colorCategorical(selectedGroup.slice(0, -6)) });
         }
 
+
+    }
+
+    function drawHistogram(selectedGroup) {
+        // update the title of the graph to show that it is a historgram
+        d3.select("#field").text(selectedGroup + ": Numerical");
+        title.text(`Histogram of ${!isSideways ? `${selectedGroup} vs Frequency` : `Frequency vs ${selectedGroup}`}`);
+
+        var values = data.map(function (d) {
+            return parseFloat(d[selectedGroup])
+        });
+
+        if (!isSideways) {
+
+            var xScale = d3.scaleLinear()
+                .domain(d3.extent(values))
+                .range([0, width])
+                .nice()
+
+            var histogram = d3.histogram()
+                .value(function (d) { return d[selectedGroup]; })
+                .domain(d3.extent(values))
+                .thresholds(xScale.ticks(TICKS))
+
+            var bins = histogram(data)
+
+            var xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "xAxis")
+                .transition().duration(1000)
+                .call(d3.axisBottom(xScale))
+
+
+            var yScale = d3.scaleLinear()
+                .domain([0, d3.max(bins, function (d) { return d.length; })])
+                .range([height, 0])
+
+            var yAxis = svg.append("g")
+                .attr("class", "yAxis")
+                .transition().duration(1000)
+                .call(d3.axisLeft(yScale));
+
+            // Use the update selection
+            var bars = svg.selectAll(".bar")
+                .data(bins);
+
+            // Remove any bars that are not needed
+            bars.exit().remove();
+
+            // Enter new bars
+            bars.enter().append("rect")
+                .attr("class", "bar")
+                .merge(bars) // Merge update and enter selections
+                .transition().duration(1000)
+                .attr("x", function (d) { return xScale(d.x0); })
+                .attr("y", function (d) { return yScale(d.length); })
+                .attr("width", function (d) { return xScale(d.x1) - xScale(d.x0); })
+                .attr("height", function (d) { return height - yScale(d.length); })
+                .attr("fill", function (d) { return colorNumeric(selectedGroup); })
+        } else {
+            var yScale = d3.scaleLinear()
+                .domain(d3.extent(values))
+                .range([0, height])
+                .nice();
+
+            var histogram = d3.histogram()
+                .value(function (d) { return d[selectedGroup]; })
+                .domain(d3.extent(values))
+                .thresholds(yScale.ticks(TICKS));
+
+            var bins = histogram(data);
+
+            var yAxis = svg.append("g")
+                .attr("class", "yAxis")
+                .call(d3.axisLeft(yScale));
+
+            var xScale = d3.scaleLinear()
+                .domain([0, d3.max(bins, function (d) { return d.length; })])
+                .range([0, width]);
+
+            var xAxis = svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .attr("class", "xAxis")
+                .call(d3.axisBottom(xScale));
+
+            // Use the update selection
+            var bars = svg.selectAll(".bar")
+                .data(bins);
+
+            // Remove any bars that are not needed
+            bars.exit().remove();
+
+            // Enter new bars
+            bars.enter().append("rect")
+                .attr("class", "bar")
+                .merge(bars) // Merge update and enter selections
+                .transition().duration(1000)
+                .attr("y", function (d) { return yScale(d.x0); })
+                .attr("x", function (d) { return 0; }) // Adjust x position as needed
+                .attr("height", function (d) { return yScale(d.x1) - yScale(d.x0); })
+                .attr("width", function (d) { return xScale(d.length); })
+                .attr("fill", function (d) { return colorNumeric(selectedGroup); });
+        }
+
+    }
+
+    function addAxesLabels(selectedGroup) {
         // Update x-axis label to the selected group
         svg.selectAll(".x-axis-label").remove(); // Remove existing X axis label
         svg.append("text")
@@ -113,181 +342,6 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text(isSideways ? selectedGroup : "Frequency");
-
-        var xScale, xAxis, yScale, yAxis;
-
-        svg.selectAll(".Xaxis, .myYaxis").remove();
-
-        svg.selectAll("rect")
-            .transition()
-            .duration(1000)
-            .attr("height", 0)
-            .remove();
-
-        if (isCategorical) {
-            var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
-
-            if (isSideways) {
-                xScale = d3.scaleLinear()
-                    .range([0, width])
-                    .domain([0, d3.max(eval(selectedGroup).values())])
-                xAxis = svg.append("g")
-                    .attr("transform", "translate(0," + height + ")")
-                    .attr("class", "Xaxis")
-                    .transition().duration(1000)
-                    .call(d3.axisBottom(xScale))
-
-                yScale = d3.scaleBand()
-                    .range([height, 0])
-                    .domain(Array.from(eval(selectedGroup).keys()).sort())
-                    .padding(0.2);
-                yAxis = svg.append("g")
-                    .transition().duration(1000)
-                    .attr("class", "myYaxis")
-                    .call(d3.axisLeft(yScale))
-
-                // Update the remaining bars
-                bars.enter()
-                    .append("rect")
-                    .merge(bars)
-                    .transition()
-                    .duration(1000)
-                    .attr("x", 0)
-                    .attr("y", d => yScale(d[0]))
-                    .attr("width", d => xScale(d[1]))
-                    .attr("height", yScale.bandwidth())//d => height - yScale(d[1]))
-                    .attr("fill", function (d) { return colorCategorical(selectedGroup.slice(0, -6)) });
-
-
-            }
-            else {
-
-
-                // Add X axis 
-
-                xScale = d3.scaleBand()
-                    .range([0, width])
-                    .padding(0.2);
-                xAxis = svg.append("g")
-                    .attr("transform", "translate(0," + height + ")")
-                    .attr("class", "Xaxis")
-
-                // add yaxis
-
-                yScale = d3.scaleLinear()
-                    .range([height, 0])
-                yAxis = svg.append("g")
-                    .attr("class", "myYaxis")
-
-
-                xScale
-                    .domain(Array.from(eval(selectedGroup).keys()).sort())
-                xAxis
-                    .transition().duration(1000)
-                    .call(d3.axisBottom(xScale))
-                    .selectAll("text")
-                    .attr("y", 0)
-                    .attr("x", 9)
-                    .attr("transform", "rotate(45)")
-                    .style("text-anchor", "start");
-
-                yScale
-                    .domain([0, d3.max(eval(selectedGroup).values())])
-
-                yAxis
-                    .transition().duration(1000)
-                    .call(d3.axisLeft(yScale))
-
-                // Update the remaining bars
-                bars.enter()
-                    .append("rect")
-                    .merge(bars)
-                    .transition()
-                    .duration(1000)
-                    .attr("x", d => xScale(d[0]))
-                    .attr("y", d => yScale(d[1]))
-                    .attr("width", xScale.bandwidth())
-                    .attr("height", d => height - yScale(d[1]))
-                    .attr("fill", function (d) { return colorCategorical(selectedGroup.slice(0, -6)) });
-            }
-        }
-        else {
-            drawHistogram(selectedGroup, xAxis, xScale, yAxis, yScale);
-            }
-        }
-
-
-    // When the button is changed, run the updateChart function
-    d3.select("#selectButtonCat").on("change", function (event, d) {
-        isCategorical = true;
-        // recover the option that has been chosen
-        const selectedOption = d3.select(this).property("value")
-        // run the updateChart function with this selected option
-        update(selectedOption)
-    })
-
-    // When the button is changed, run the updateChart function
-    d3.select("#selectButtonNum").on("change", function (event, d) {
-        isCategorical = false;
-        // recover the option that has been chosen
-        const selectedOption = d3.select(this).property("value")
-        // run the updateChart function with this selected option
-        update(selectedOption)
-    })
-
-
-    function drawHistogram(selectedGroup) {
-        console.log("drwing hist")
-        var histogram = d3.scaleLinear()
-        svg.selectAll(".Xaxis, .myYaxis").remove();
-
-        if (isSideways) {
-            // TODO
-        } else {
-
-            var values = data.map(function (d) {
-                return d[selectedGroup]
-            });
-
-            var histogram = d3.histogram()
-                .value(function (d) { return d; })
-                .domain(d3.extent(values))
-                .thresholds(TICKS)
-
-            var bins = histogram(values)
-
-            var xScale = d3.scaleLinear()
-                .domain(d3.extent(values))
-                .range([0, width])
-
-            var xAxis = svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .attr("class", "xAxis")
-
-            var yScale = d3.scaleLinear()
-                .domain([0, d3.max(bins, function (d) { return d.length; })])
-                .range([height, 0])
-
-            var yAxis = svg.append("g")
-                .attr("class", "myYAxis")
-
-            svg.selectAll("rect")
-                .data(bins)
-                .enter().append("rect")
-                .attr("x", function (d) { return xScale(d.x0); })
-                .attr("y", function (d) { return yScale(d.length); })
-                .attr("width", function (d) { return xScale(d.x1) - xScale(d.x0) - 1; })
-                .attr("height", function (d) { return height - yScale(d.length); })
-                .style("fill", function (d) { return colorNumeric(selectedGroup) })
-
-            
-            xAxis.call(d3.axisBottom(xScale))
-
-            
-            yAxis.call(d3.axisLeft(yScale));
-
-        }
-        
     }
 
 })
