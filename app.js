@@ -278,7 +278,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         } else {
             var yScale = d3.scaleLinear()
                 .domain(d3.extent(values))
-                .range([0, height])
+                .range([height, 0])
                 .nice();
 
             var histogram = d3.histogram()
@@ -313,9 +313,9 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
                 .attr("class", "bar")
                 .merge(bars) // Merge update and enter selections
                 .transition().duration(1000)
-                .attr("y", function (d) { return yScale(d.x0); })
-                .attr("x", function (d) { return 0; }) // Adjust x position as needed
-                .attr("height", function (d) { return yScale(d.x1) - yScale(d.x0); })
+                .attr("y", function (d) { return yScale(d.x1); })
+                .attr("x", function (d) { return 1; }) // Adjust x position as needed
+                .attr("height", function (d) { return yScale(d.x0) - yScale(d.x1); })
                 .attr("width", function (d) { return xScale(d.length); })
                 .attr("fill", function (d) { return colorNumeric(selectedGroup); });
         }
