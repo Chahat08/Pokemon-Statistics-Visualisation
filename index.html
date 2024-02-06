@@ -6,17 +6,22 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <title>Your Visualization</title>
+    <title>CSE 564 LAB 1</title>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-8">
-                <h1>Hello, World</h1>
+                <h1>Pokemon Data Visualisation</h1>
                 <h2 id="field">Generation</h2>
                 <!-- Initialize a select button -->
                 <select id="selectButtonCat" class="form-control"></select>
                 <select id="selectButtonNum" class="form-control"></select>
+                <select id="selectButtonScatter" class="form-control"></select>
+                <div>
+                    <input type="radio" name="axis" value="X" checked="checked">X-Axis Field<br>
+                    <input type="radio" name="axis" value="Y">Y-Axis Field<br>
+                </div>
                 <!-- Add a toggle button -->
                 <button id="toggleButton" class="btn btn-primary mt-3">Toggle Orientation</button>
                 <!-- Create a div where the graph will take place -->

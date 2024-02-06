@@ -36,6 +36,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     const numeric = ["attack", "defense", "speed", "sp_attack", "sp_defense", "hp", "percentage_male", "capture_rate", "base_happiness", "base_total", "base_egg_steps", "weight_kg", "height_m", "Number of votes", "Rank"]
 
+
+    const allFields = catergorical.concat(numeric)
     
 
     // add the options to the button
@@ -56,12 +58,24 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .text(function (d) { return d; }) // text showed in the menu
         .attr("value", function (d) { return d; }) // corresponding value returned by the button
 
+    // add the options to the button
+    d3.select("#selectButtonScatter")
+        .selectAll('myOptions')
+        .data(allFields)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
     let isSideways = false;
     let isCategorical = true;
+    let isScatter = false;
+    let scatterX = "attack"
+    let scatterY= "generation"
 
     // When the button is changed, run the updateChart function
     d3.select("#selectButtonCat").on("change", function (event, d) {
-        isCategorical = true;
+        isCategorical = true; isScatter = false;
         // recover the option that has been chosen
         const selectedOption = d3.select(this).property("value")
         // run the updateChart function with this selected option
@@ -70,16 +84,48 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     // When the button is changed, run the updateChart function
     d3.select("#selectButtonNum").on("change", function (event, d) {
-        isCategorical = false;
+        isCategorical = false; isScatter = false;
         // recover the option that has been chosen
         const selectedOption = d3.select(this).property("value")
         // run the updateChart function with this selected option
         update(selectedOption)
     })
 
-    // TOGGLE ORIENTATION FUNCTIONALITY
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButtonScatter").on("change", function (event, d) {
+        isCategorical = false;
+        isScatter = true;
+        // recover the option that has been chosen
+        const selectedOption = d3.select(this).property("value");
 
-    
+        // Check which radio button is selected
+        const xAxisRadio = document.querySelector('input[name="axis"][value="X"]');
+
+        if (xAxisRadio.checked) {
+            scatterX = selectedOption;
+        } else {
+            scatterY = selectedOption;
+        }
+
+        // run the updateChart function with this selected option
+        update(selectedOption);
+    });
+
+    // Add event listeners to the radio buttons
+    d3.selectAll('input[name="axis"]').on("change", function () {
+        const selectedOption = d3.select("#selectButtonScatter").property("value");
+
+        if (this.value === "X") {
+            scatterX = selectedOption;
+        } else {
+            scatterY = selectedOption;
+        }
+
+        // run the updateChart function with the selected option
+        update(selectedOption);
+    });
+
+    // TOGGLE ORIENTATION FUNCTIONALITY
 
     // Add an event listener to the toggle button
     d3.select("#toggleButton").on("click", function () {
@@ -117,12 +163,54 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("height", 0)
             .remove();
 
-        if (isCategorical) {
-            drawBarPlot(selectedGroup)            
+        svg.selectAll("circle").remove();
+
+        if (isScatter) {
+
+            drawScatterPlot()
         }
         else {
-            drawHistogram(selectedGroup)
+            if (isCategorical) {
+                drawBarPlot(selectedGroup)
+            }
+            else {
+                drawHistogram(selectedGroup)
+            }
         }
+    }
+
+    function drawScatterPlot() {
+        console.log("x: ", scatterX)
+        console.log("y: ", scatterY)
+        // Add X axis
+        var x = d3.scaleLinear()
+            .domain([0, d3.max(data, function (d) { return d[scatterX]; })])
+            .range([0, width]);
+        svg.append("g")
+            .attr("class", "xAxis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([0, d3.max(data, function (d) { return d[scatterY]; })])
+            .range([height, 0]);
+        svg.append("g")
+            .attr("class", "yAxis")
+            .call(d3.axisLeft(y));
+
+
+        // Add dots
+        svg.append('g')
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return x(d[scatterX]); })
+            .attr("cy", function (d) { return height-y(d[scatterY]); })
+            .attr("r", 5.0)
+            .style("fill", "#69b3a2");
+    
     }
 
     function drawBarPlot(selectedGroup) {
