@@ -132,6 +132,10 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         // Toggle the orientation state
         isSideways = !isSideways;
 
+        if (isScatter) {
+            [scatterX, scatterY] = [scatterY, scatterX];
+        }
+
         // Call the update function with the current selected option
         const selectedOption = isCategorical ? d3.select("#selectButtonCat").property("value") : d3.select("#selectButtonNum").property("value");
         update(selectedOption);
@@ -145,6 +149,10 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     const colorNumeric = d3.scaleOrdinal()
         .domain(numeric)
         .range(d3.schemeSet1);
+
+    const colorScatter = d3.scaleOrdinal()
+        .domain(allFields)
+        .range(d3.schemeDark2);
 
     const TICKS = 50
 
@@ -163,7 +171,11 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("height", 0)
             .remove();
 
-        svg.selectAll("circle").remove();
+        svg.selectAll("circle")
+            .transition()
+            .duration(500)
+            .attr("r", 0.0)
+            .remove();
 
         if (isScatter) {
 
@@ -180,36 +192,57 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     }
 
     function drawScatterPlot() {
-        console.log("x: ", scatterX)
-        console.log("y: ", scatterY)
-        // Add X axis
-        var x = d3.scaleLinear()
-            .domain([0, d3.max(data, function (d) { return d[scatterX]; })])
-            .range([0, width]);
-        svg.append("g")
-            .attr("class", "xAxis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
+    title.text(`Scatter plot of ${scatterX} vs. ${scatterY}`);
+        // Determine the extent of values for both x and y axes
+    var xExtent = d3.extent(data, function (d) { return parseFloat(d[scatterX]); });
+    var yExtent = d3.extent(data, function (d) { return parseFloat(d[scatterY]); });
 
-        // Add Y axis
-        var y = d3.scaleLinear()
-            .domain([0, d3.max(data, function (d) { return d[scatterY]; })])
-            .range([height, 0]);
-        svg.append("g")
-            .attr("class", "yAxis")
-            .call(d3.axisLeft(y));
+    // Add padding to prevent dots from being on the axes
+    var xPadding = (xExtent[1] - xExtent[0]) * 0.05;
+    var yPadding = (yExtent[1] - yExtent[0]) * 0.05;
 
+    // Add a little extra space to avoid dots being on the axes
+    var xMin = xExtent[0] - xPadding;
+    var xMax = xExtent[1] + xPadding;
+    var yMin = yExtent[0] - yPadding;
+    var yMax = yExtent[1] + yPadding;
 
-        // Add dots
+    // Add X axis
+    var x = d3.scaleLinear()
+        .domain([xMin, xMax])
+        .range([0, width]);
+    svg.append("g")
+        .attr("class", "xAxis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    // Add Y axis
+    var y = d3.scaleLinear()
+        .domain([yMin, yMax])
+        .range([height, 0]);
+    svg.append("g")
+        .attr("class", "yAxis")
+        .call(d3.axisLeft(y));
+
+    // Use the update selection
+    var dots = svg.selectAll(".dots")
+        .data(data);
+
+    // Remove any dots that are not needed
+    dots.exit().remove();
+
+    // Add dots
         svg.append('g')
             .selectAll("dot")
             .data(data)
             .enter()
             .append("circle")
-            .attr("cx", function (d) { return x(d[scatterX]); })
-            .attr("cy", function (d) { return height-y(d[scatterY]); })
-            .attr("r", 5.0)
-            .style("fill", "#69b3a2");
+            .attr("class", "dots")
+            .merge(dots)
+            .transition().duration(1000)
+            .attr("cx", function (d) { return x(parseFloat(d[scatterX])) + Math.random() * 4 - 2; }) // Add jitter to x-coordinate
+            .attr("cy", function (d) { return y(parseFloat(d[scatterY])) + Math.random() * 4 - 2; }) // Add jitter to y-coordinate
+            .attr("r", 2.0)
     
     }
 
@@ -417,7 +450,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("class", "x-axis-label")
             .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
             .style("text-anchor", "middle")
-            .text(isSideways ? "Frequency" : selectedGroup)
+            .text(isScatter ? (scatterX) : (isSideways ? "Frequency" : selectedGroup))
             .attr("dy", "1em");
 
         // Update y-axis label to "Frequency"
@@ -429,7 +462,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text(isSideways ? selectedGroup : "Frequency");
+            .text(isScatter ? (scatterY) : (isSideways ? selectedGroup : "Frequency"));
     }
 
 })
