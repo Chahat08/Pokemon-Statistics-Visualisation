@@ -2,12 +2,13 @@
 const margin = { top: 50, right: 50, bottom: 70, left: 50 };
 
 // Adjusted width based on the container size
-const containerWidth = document.querySelector(".container").clientWidth;
-const width = containerWidth - margin.left - margin.right - 20;
+const containerWidth = document.querySelector("#my_dataviz").clientWidth;
+const width = containerWidth * (2 / 3) - margin.left - margin.right;
 
 // Adjusted height based on the container size
-const containerHeight = 500;
-const height = containerHeight - margin.top - margin.bottom;
+//const containerHeight = window.innerHeight;
+//const height = containerHeight - margin.top - margin.bottom;
+const height = 300
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
