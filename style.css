@@ -1,29 +1,48 @@
 body {
+    /*background-image: url('img/bg.png');
+    background-repeat: repeat;
+    background-size: auto;*/
+
     font-family: 'Roboto', sans-serif;
     margin: 0; /* Remove default margin */
-    overflow: hidden; /* Disable scrolling */
+    /*overflow: hidden;*/ /* Disable scrolling */
+}
+
+h1 {
+    font-family: "Comic Neue", cursive;
+    font-weight: 700;
 }
 
 .container {
-    background-color: #fff;
+    background-color: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     padding: 20px;
     margin-top: 0; /* Remove top margin */
 }
+/*.chartHeading{
+    background-color: goldenrod;
+    font-weight: 500;
+}*/
 
 .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: goldenrod;
+    border-color: black;
+    color: black;
 }
 
     .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
+        background-color: goldenrod;
+        border-color: black;
     }
 
 #my_dataviz svg {
     max-width: 66.67%; /* Set max width to 2/3 of the container width */
     margin: 0 auto; /* Center the visualization horizontally */
     display: block; /* Ensure SVG is displayed as a block element */
+}
+#pokemon-logo {
+    max-width: 125px; /* Adjust the max-width as needed */
+    width: 100%;
+    height: auto;
 }

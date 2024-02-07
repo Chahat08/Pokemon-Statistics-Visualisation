@@ -1,5 +1,5 @@
 // Adjusted margins for better spacing
-const margin = { top: 50, right: 50, bottom: 70, left: 50 };
+const margin = { top: 50, right: 50, bottom: 70, left: 80 };
 
 // Adjusted width based on the container size
 const containerWidth = document.querySelector("#my_dataviz").clientWidth;
@@ -83,12 +83,24 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         update(selectedOption)
     })
 
+    d3.select("#drawBarChart").on("click", function (event, d) {
+        isCategorical = true; isScatter = false;
+        const selectedOption = d3.select("#selectButtonCat").property("value")
+        update(selectedOption)
+    })
+
     // When the button is changed, run the updateChart function
     d3.select("#selectButtonNum").on("change", function (event, d) {
         isCategorical = false; isScatter = false;
         // recover the option that has been chosen
         const selectedOption = d3.select(this).property("value")
         // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+
+    d3.select("#drawHistogram").on("click", function (event, d) {
+        isCategorical = false; isScatter = false;
+        const selectedOption = d3.select("#selectButtonNum").property("value")
         update(selectedOption)
     })
 
@@ -112,6 +124,20 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         update(selectedOption);
     });
 
+    d3.select("#drawScatterPlot").on("click", function (event, d) {
+        isCategorical = false;
+        isScatter = true;
+        // recover the option that has been chosen
+        const selectedOption = d3.select("#selectButtonScatter").property("value");
+
+        // Check which radio button is selected
+        scatterX = selectedOption;
+        scatterY = selectedOption;
+
+        // run the updateChart function with this selected option
+        update(selectedOption);
+    })
+
     // Add event listeners to the radio buttons
     d3.selectAll('input[name="axis"]').on("change", function () {
         const selectedOption = d3.select("#selectButtonScatter").property("value");
@@ -124,6 +150,15 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
         // run the updateChart function with the selected option
         update(selectedOption);
+    });
+
+    var TICKS = 20
+
+    // Listen to the button -> update if user change it
+    d3.select("#nBin").on("input", function () {
+        TICKS = +this.value
+        isCategorical = false;
+        update(d3.select("#selectButtonNum").property("value"))
     });
 
     // TOGGLE ORIENTATION FUNCTIONALITY
@@ -155,7 +190,6 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .domain(allFields)
         .range(d3.schemeDark2);
 
-    const TICKS = 50
 
     update("generationCounts")
 
