@@ -1,11 +1,7 @@
 body {
-    /*background-image: url('img/bg.png');
-    background-repeat: repeat;
-    background-size: auto;*/
-
     font-family: 'Roboto', sans-serif;
-    margin: 0; /* Remove default margin */
-    /*overflow: hidden;*/ /* Disable scrolling */
+    margin: 0;
+    background-color: wheat;
 }
 
 h1 {
@@ -18,13 +14,11 @@ h1 {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     padding: 20px;
-    margin-top: 0; /* Remove top margin */
-    max-height: 100vh;
+    margin-top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
-/*.chartHeading{
-    background-color: goldenrod;
-    font-weight: 500;
-}*/
 
 .btn-primary {
     background-color: goldenrod;
@@ -37,13 +31,45 @@ h1 {
         border-color: black;
     }
 
-#my_dataviz svg {
-    max-width: 66.67%; /* Set max width to 2/3 of the container width */
-    margin: 0 auto; /* Center the visualization horizontally */
-    display: block; /* Ensure SVG is displayed as a block element */
+
+.menu {
+    border-bottom: 1px solid black; /* Add top border to columns */
+    /*border-left: 1px solid black;*/ /* Add left border to columns */
+    /*border-right: 1px solid black;*/ /* Add right border to columns */
 }
+
+#my_dataviz svg {
+    max-width: 66.67%;
+    margin: 0 auto;
+    display: block;
+}
+
 #pokemon-logo {
-    max-width: 125px; /* Adjust the max-width as needed */
+    max-width: 110px;
     width: 100%;
     height: auto;
 }
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown:hover .dropdown-toggle {
+    background-color: goldenrod;
+    border-color: black;
+}
+
+.dropdown-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+

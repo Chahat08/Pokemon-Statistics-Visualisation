@@ -71,7 +71,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     let isSideways = false;
     let isCategorical = true;
     let isScatter = false;
-    let scatterX = "attack"
+    let scatterX = "generation"
     let scatterY= "generation"
 
     // When the button is changed, run the updateChart function
@@ -213,7 +213,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .remove();
 
         if (isScatter) {
-
+            document.getElementById('xAxisLabel').innerHTML = "X-axis Field: "+scatterX;
+            document.getElementById('yAxisLabel').innerHTML = "Y-axis Field: " + scatterY;
             drawScatterPlot()
         }
         else {
@@ -227,46 +228,48 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     }
 
     function drawScatterPlot() {
-    title.text(`Scatter plot of ${scatterX} vs. ${scatterY}`);
         // Determine the extent of values for both x and y axes
-    var xExtent = d3.extent(data, function (d) { return parseFloat(d[scatterX]); });
-    var yExtent = d3.extent(data, function (d) { return parseFloat(d[scatterY]); });
+        var xExtent = d3.extent(data, function (d) { return parseFloat(d[scatterX]); });
+        var yExtent = d3.extent(data, function (d) { return parseFloat(d[scatterY]); });
 
-    // Add padding to prevent dots from being on the axes
-    var xPadding = (xExtent[1] - xExtent[0]) * 0.05;
-    var yPadding = (yExtent[1] - yExtent[0]) * 0.05;
+        // Find the minimum value for x and y
+        var xMin = Math.min(0, xExtent[0]);
+        var yMin = Math.min(0, yExtent[0]);
 
-    // Add a little extra space to avoid dots being on the axes
-    var xMin = xExtent[0] - xPadding;
-    var xMax = xExtent[1] + xPadding;
-    var yMin = yExtent[0] - yPadding;
-    var yMax = yExtent[1] + yPadding;
+        // Determine the maximum values for x and y
+        var xMax = xExtent[1];
+        var yMax = yExtent[1];
 
-    // Add X axis
-    var x = d3.scaleLinear()
-        .domain([xMin, xMax])
-        .range([0, width]);
-    svg.append("g")
-        .attr("class", "xAxis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        // Add X axis
+        var x = d3.scaleLinear()
+            .domain([xMin, xMax])
+            .range([0, width]);
 
-    // Add Y axis
-    var y = d3.scaleLinear()
-        .domain([yMin, yMax])
-        .range([height, 0]);
-    svg.append("g")
-        .attr("class", "yAxis")
-        .call(d3.axisLeft(y));
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([yMin, yMax])
+            .range([height, 0]);
 
-    // Use the update selection
-    var dots = svg.selectAll(".dots")
-        .data(data);
+        // Adjust the transform of the Y axis to move it to the leftmost position
+        svg.append("g")
+            .attr("class", "yAxis")
+            .attr("transform", "translate(" + x(0) + ",0)") // Translate the y axis to the leftmost position
+            .call(d3.axisLeft(y));
 
-    // Remove any dots that are not needed
-    dots.exit().remove();
+        // Adjust the transform of the X axis to move it to the bottom position
+        svg.append("g")
+            .attr("class", "xAxis")
+            .attr("transform", "translate(0," + y(0) + ")") // Translate the x axis to the bottom position
+            .call(d3.axisBottom(x));
 
-    // Add dots
+        // Use the update selection
+        var dots = svg.selectAll(".dots")
+            .data(data);
+
+        // Remove any dots that are not needed
+        dots.exit().remove();
+
+        // Add dots
         svg.append('g')
             .selectAll("dot")
             .data(data)
@@ -275,9 +278,10 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("class", "dots")
             .merge(dots)
             .transition().duration(1000)
-            .attr("cx", function (d) { return x(parseFloat(d[scatterX])) + Math.random() * 4 - 2; }) // Add jitter to x-coordinate
-            .attr("cy", function (d) { return y(parseFloat(d[scatterY])) + Math.random() * 4 - 2; }) // Add jitter to y-coordinate
-            .attr("r", 2.0)
+            .attr("cx", function (d) { return x(parseFloat(d[scatterX])); })
+            .attr("cy", function (d) { return y(parseFloat(d[scatterY])); })
+            .attr("r", 2.0);
+
     
     }
 
@@ -385,7 +389,6 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         });
 
         if (!isSideways) {
-
             var xScale = d3.scaleLinear()
                 .domain(d3.extent(values))
                 .range([0, width])
@@ -398,11 +401,27 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
             var bins = histogram(data)
 
-            var xAxis = svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .attr("class", "xAxis")
-                .transition().duration(1000)
-                .call(d3.axisBottom(xScale))
+            // Calculate bin width
+            var binWidth = (bins[0].x1 - bins[0].x0);
+
+            // Calculate bin midpoints
+            var binMidpoints = bins.map(function (bin) {
+                return bin.x0 + binWidth / 2;
+            });
+
+            if (TICKS < 25) {
+                var xAxis = svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .attr("class", "xAxis")
+                    .transition().duration(1000)
+                    .call(d3.axisBottom(xScale).tickValues(binMidpoints))
+            } else {
+                var xAxis = svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .attr("class", "xAxis")
+                    .transition().duration(1000)
+                    .call(d3.axisBottom(xScale))
+            }
 
 
             var yScale = d3.scaleLinear()
@@ -444,9 +463,24 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
             var bins = histogram(data);
 
-            var yAxis = svg.append("g")
-                .attr("class", "yAxis")
-                .call(d3.axisLeft(yScale));
+
+            if (TICKS < 25) {
+                // Calculate bin height
+                var binHeight = bins[0].x1 - bins[0].x0;
+
+                // Calculate bin midpoints
+                var binMidpoints = bins.map(function (bin) {
+                    return bin.x0 + binHeight / 2;
+                });
+
+                var yAxis = svg.append("g")
+                    .attr("class", "yAxis")
+                    .call(d3.axisLeft(yScale).tickValues(binMidpoints));
+            } else {
+                var yAxis = svg.append("g")
+                    .attr("class", "yAxis")
+                    .call(d3.axisLeft(yScale));
+            }
 
             var xScale = d3.scaleLinear()
                 .domain([0, d3.max(bins, function (d) { return d.length; })])
