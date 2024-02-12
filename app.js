@@ -1,14 +1,14 @@
 // Adjusted margins for better spacing
-const margin = { top: 50, right: 50, bottom: 70, left: 80 };
+const margin = { top: 50, right: 50, bottom: 70, left: 70 };
 
 // Adjusted width based on the container size
 const containerWidth = document.querySelector("#my_dataviz").clientWidth;
-const width = containerWidth * (2 / 3) - margin.left - margin.right;
+const width = containerWidth - margin.left - margin.right;
 
 // Adjusted height based on the container size
-//const containerHeight = window.innerHeight;
-//const height = containerHeight - margin.top - margin.bottom;
-const height = 220
+const containerHeight = document.querySelector("#my_dataviz").clientHeight;
+const height = containerHeight - margin.top - margin.bottom;
+//const height = 220
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
@@ -83,7 +83,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         update(selectedOption)
     })
 
-    d3.select("#drawBarChart").on("click", function (event, d) {
+    d3.select("#barChartDropdownButton").on("click", function (event, d) {
         isCategorical = true; isScatter = false;
         const selectedOption = d3.select("#selectButtonCat").property("value")
         update(selectedOption)
@@ -98,7 +98,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         update(selectedOption)
     })
 
-    d3.select("#drawHistogram").on("click", function (event, d) {
+    d3.select("#histogramDropdownButton").on("click", function (event, d) {
         isCategorical = false; isScatter = false;
         const selectedOption = d3.select("#selectButtonNum").property("value")
         update(selectedOption)
@@ -124,7 +124,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         update(selectedOption);
     });
 
-    d3.select("#drawScatterPlot").on("click", function (event, d) {
+    d3.select("#scatterPlotDropdownButton").on("click", function (event, d) {
         isCategorical = false;
         isScatter = true;
         // recover the option that has been chosen
@@ -214,7 +214,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
         if (isScatter) {
             document.getElementById('xAxisLabel').innerHTML = "X-axis Field: "+scatterX;
-            document.getElementById('yAxisLabel').innerHTML = "Y-axis Field: " + scatterY;
+            document.getElementById('yAxisLabel').innerHTML = "Y-axis Field: "+scatterY;
             drawScatterPlot()
         }
         else {
@@ -517,7 +517,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         svg.selectAll(".x-axis-label").remove(); // Remove existing X axis label
         svg.append("text")
             .attr("class", "x-axis-label")
-            .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
+            .attr("transform", `translate(${width / 2}, ${height + margin.top - 20})`)
             .style("text-anchor", "middle")
             .text(isScatter ? (scatterX) : (isSideways ? "Frequency" : selectedGroup))
             .attr("dy", "1em");
@@ -527,7 +527,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         svg.append("text")
             .attr("class", "y-axis-label")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left)
+            .attr("y", 0 - margin.left - 5)
             .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")

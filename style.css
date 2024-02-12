@@ -1,7 +1,7 @@
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    background-color: wheat;
+    background-color: #3c5aa6;
 }
 
 h1 {
@@ -34,19 +34,18 @@ h1 {
 
 .menu {
     border-top: 1px solid black;
-    border-bottom: 1px solid black; /* Add top border to columns */
-    border-left: 1px solid black;  Add left border to columns 
-    border-right: 1px solid black;  Add right border to columns 
+    border-bottom: 1px solid black; 
+    border-left: 1px solid black;  
+    border-right: 1px solid black;  
 }
 
 #my_dataviz svg {
-    max-width: 66.67%;
     margin: 0 auto;
     display: block;
 }
 
 #pokemon-logo {
-    max-width: 110px;
+    max-width: 125px;
     width: 100%;
     height: auto;
 }
