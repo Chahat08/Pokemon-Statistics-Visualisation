@@ -228,6 +228,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     }
 
     function drawScatterPlot() {
+        title.text(`Scatterplot of ${scatterX} (x-axis) vs ${scatterY} (y-axis)`);
+
         // Determine the extent of values for both x and y axes
         var xExtent = d3.extent(data, function (d) { return parseFloat(d[scatterX]); });
         var yExtent = d3.extent(data, function (d) { return parseFloat(d[scatterY]); });
@@ -295,16 +297,16 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .transition().duration(1000)
             .attr("cx", function (d) {
                 if (numeric.includes(scatterX)) {
-                    return xScale(parseFloat(d[scatterX]));
+                    return xScale(parseFloat(d[scatterX])) + Math.random() * 10; // Add random jittering to x-coordinates
                 } else if (catergorical.includes(scatterX)) {
-                    return xScale(d[scatterX]) + xScale.bandwidth() / 2;
+                    return xScale(d[scatterX]) + xScale.bandwidth() / 2 + Math.random() * 10;
                 }
             })
             .attr("cy", function (d) {
                 if (numeric.includes(scatterY)) {
-                    return yScale(parseFloat(d[scatterY]));
+                    return yScale(parseFloat(d[scatterY])) + Math.random() * 10; // Add random jittering to y-coordinates
                 } else if (catergorical.includes(scatterY)) {
-                    return yScale(d[scatterY]) + yScale.bandwidth() / 2;
+                    return yScale(d[scatterY]) + yScale.bandwidth() / 2 + Math.random() * 10;
                 }
             })
             .attr("r", 2.0);    
@@ -312,8 +314,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     function drawBarPlot(selectedGroup) {
         // update the title of the graph to show that it is a bar plot
-        d3.select("#field").text(selectedGroup.slice(0, -6) + ": Categorical");
-        title.text(`Bar Chart of ${!isSideways ? `${selectedGroup.slice(0, -6)} vs Frequency` : `Frequency vs ${selectedGroup.slice(0, -6)}`}`);
+        title.text(`Bar Chart of ${!isSideways ? `${selectedGroup.slice(0, -6)} (x-axis) vs Frequency (y-axis)` : `Frequency (x-axis) vs ${selectedGroup.slice(0, -6)}(y-axis)`}`);
 
         var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
 
@@ -406,8 +407,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     function drawHistogram(selectedGroup) {
         // update the title of the graph to show that it is a historgram
-        d3.select("#field").text(selectedGroup + ": Numerical");
-        title.text(`Histogram of ${!isSideways ? `${selectedGroup} vs Frequency` : `Frequency vs ${selectedGroup}`}`);
+        title.text(`Histogram of ${!isSideways ? `${selectedGroup} (x-axis) vs Frequency (y-axis)` : `Frequency (x-axis) vs ${selectedGroup} (y-axis)`}`);
 
         var values = data.map(function (d) {
             return parseFloat(d[selectedGroup])
