@@ -309,7 +309,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
                     return yScale(d[scatterY]) + yScale.bandwidth() / 2 + Math.random() * 10;
                 }
             })
-            .attr("r", 2.0);    
+            .attr("r", 2.0)
+            .attr("fill", function (d) { return colorScatter(scatterX); });    
     }
 
     function drawBarPlot(selectedGroup) {
