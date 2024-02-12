@@ -25,13 +25,13 @@
                 <h1>STATISTICS</h1>
             </div>
         </div> <!---->
-        <div class="row mt-3 mb-5" style="height: 5%">
+        <div class="row mt-3 mb-5" style="height: 10%">
             <!-- Dropdowns Row -->
             <div class="col-md-4 text-center menu" id="barChartDropdown">
                 <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="barChartDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Draw Bar Plot
-                    </button>
+                    <div class="dropdown-toggle" id="barChartDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DRAW BAR CHART
+                    </div>
                     <div class="dropdown-menu" aria-labelledby="barChartDropdownButton">
                         <select id="selectButtonCat" class="form-control"></select>
                     </div>
@@ -39,13 +39,13 @@
             </div>
             <div class="col-md-4 text-center menu" id="histogramDropdown">
                 <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="histogramDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Draw Histogram
-                    </button>
+                    <div class="dropdown-toggle" id="histogramDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DRAW HISTOGRAM
+                    </div>
                     <div class="dropdown-menu" aria-labelledby="histogramDropdownButton">
                         <select id="selectButtonNum" class="form-control"></select>
                         <p>
-                            <label class="mt-3">Number of bins:</label>
+                            <label class="mt-3" style="color: white;">Number of bins:</label>
                             <input type="number" min="1" max="100" step="10" value="20" id="nBin">
                         </p>
                     </div>
@@ -53,19 +53,20 @@
             </div>
             <div class="col-md-4 text-center menu" id="scatterPlotDropdown">
                 <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="scatterPlotDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Draw Scatter Plot
-                    </button>
+                    <div class="dropdown-toggle" id="scatterPlotDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DRAW SCATTER PLOT
+                    </div>
                     <div class="dropdown-menu" aria-labelledby="scatterPlotDropdownButton">
                         <select id="selectButtonScatter" class="form-control"></select>
                         <div>
-                            <input type="radio" name="axis" value="X" checked="checked"> <span id="xAxisLabel">X-Axis Field: Generation</span><br>
-                            <input type="radio" name="axis" value="Y"> <span id="yAxisLabel">Y-Axis Field: Generation</span><br>
+                            <input type="radio" name="axis" value="X" checked="checked" > <span id="xAxisLabel" style="color: white;">X-Axis Field: Generation</span><br>
+                            <input type="radio" name="axis" value="Y"> <span id="yAxisLabel" style="color: white;">Y-Axis Field: Generation</span><br>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <!---->
         <div class="row mt-5 justify-content-center" style="height: 70%">
             <!-- Visualization Container Row -->
