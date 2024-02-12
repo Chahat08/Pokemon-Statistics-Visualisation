@@ -28,14 +28,14 @@ const title = svg.append("text")
 d3.csv("data/pokemon_data.csv").then(function (data) {
 
     // List of groups (here I have one group per column)
-    const catergorical = ["generation", "is_legendary", "type1", "type2"]
+    const catergorical = ["Generation", "Is Legendary?", "Primary Type", "Secondary Type"]
 
-    var generationCounts = d3.rollup(data, (D) => D.length, (d) => d.generation)
-    var is_legendaryCounts = d3.rollup(data, (D) => D.length, (d) => d.is_legendary)
-    var type1Counts = d3.rollup(data, (D) => D.length, (d) => d.type1)
-    var type2Counts = d3.rollup(data, (D) => D.length, (d) => d.type2)
+    var generationCounts = d3.rollup(data, (D) => D.length, (d) => d['Generation'])
+    var is_legendaryCounts = d3.rollup(data, (D) => D.length, (d) => d['Is Legendary?'])
+    var type1Counts = d3.rollup(data, (D) => D.length, (d) => d['Primary Type'])
+    var type2Counts = d3.rollup(data, (D) => D.length, (d) => d['Secondary Type'])
 
-    const numeric = ["attack", "defense", "speed", "sp_attack", "sp_defense", "hp", "percentage_male", "capture_rate", "base_happiness", "base_total", "base_egg_steps", "weight_kg", "height_m", "Number of votes", "Rank"]
+    const numeric = ["Attack", "Defense", "Speed", "Special Attack", "Special Defense", "HP", "Percentage Male", "Capture Rate", "Base Happiness", "Base Total", "Base Egg Steps", "Weight in Kilograms", "Height in Meters", "Number of votes", "Rank"]
 
 
     const allFields = catergorical.concat(numeric)
@@ -317,6 +317,11 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         // update the title of the graph to show that it is a bar plot
         title.text(`Bar Chart of ${!isSideways ? `${selectedGroup.slice(0, -6)} (x-axis) vs Frequency (y-axis)` : `Frequency (x-axis) vs ${selectedGroup.slice(0, -6)}(y-axis)`}`);
 
+        if (selectedGroup.indexOf("Legendary") !== -1) selectedGroup = "is_legendaryCounts";
+        else if (selectedGroup.indexOf("Generation") !== -1) selectedGroup = "generationCounts";
+        else if (selectedGroup.indexOf("Primary") !== -1) selectedGroup = "type1Counts";
+        else selectedGroup = "type2Counts";
+
         var bars = svg.selectAll("rect").data(eval(selectedGroup).entries());
 
         if (isSideways) {
@@ -545,7 +550,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("class", "x-axis-label")
             .attr("transform", `translate(${width / 2}, ${height + margin.top - 20})`)
             .style("text-anchor", "middle")
-            .text(isScatter ? (scatterX) : (isSideways ? "Frequency" : selectedGroup))
+            .text(isScatter ? (scatterX) : (isSideways ? "Frequency" : (isCategorical ? selectedGroup.slice(0, -6) : selectedGroup)))
             .attr("dy", "1em");
 
         // Update y-axis label to "Frequency"
@@ -557,7 +562,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text(isScatter ? (scatterY) : (isSideways ? selectedGroup : "Frequency"));
+            .text(isScatter ? (scatterY) : (isSideways ? (isCategorical ? selectedGroup.slice(0, -6) : selectedGroup) : "Frequency"));
     }
 
 })
