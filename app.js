@@ -241,26 +241,41 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         var yMax = yExtent[1];
 
         // Add X axis
-        var x = d3.scaleLinear()
-            .domain([xMin, xMax])
-            .range([0, width]);
+        var xScale;
+        if (numeric.includes(scatterX)) {
+            xScale = d3.scaleLinear()
+                .domain([xMin, xMax])
+                .range([0, width]);
+        } else if (catergorical.includes(scatterX)) {
+            xScale = d3.scaleBand()
+                .domain(data.map(function (d) { return d[scatterX]; }))
+                .range([0, width])
+                .padding(0.1);
+        }
 
         // Add Y axis
-        var y = d3.scaleLinear()
-            .domain([yMin, yMax])
-            .range([height, 0]);
+        var yScale;
+        if (numeric.includes(scatterY)) {
+            yScale = d3.scaleLinear()
+                .domain([yMin, yMax])
+                .range([height, 0]);
+        } else if (catergorical.includes(scatterY)) {
+            yScale = d3.scaleBand()
+                .domain(data.map(function (d) { return d[scatterY]; }))
+                .range([height, 0])
+                .padding(0.1);
+        }
 
         // Adjust the transform of the Y axis to move it to the leftmost position
         svg.append("g")
             .attr("class", "yAxis")
-            .attr("transform", "translate(" + x(0) + ",0)") // Translate the y axis to the leftmost position
-            .call(d3.axisLeft(y));
+            .call(d3.axisLeft(yScale));
 
         // Adjust the transform of the X axis to move it to the bottom position
         svg.append("g")
             .attr("class", "xAxis")
-            .attr("transform", "translate(0," + y(0) + ")") // Translate the x axis to the bottom position
-            .call(d3.axisBottom(x));
+            .attr("transform", "translate(0," + height + ")") // Translate the x axis to the bottom position
+            .call(d3.axisBottom(xScale));
 
         // Use the update selection
         var dots = svg.selectAll(".dots")
@@ -278,11 +293,21 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("class", "dots")
             .merge(dots)
             .transition().duration(1000)
-            .attr("cx", function (d) { return x(parseFloat(d[scatterX])); })
-            .attr("cy", function (d) { return y(parseFloat(d[scatterY])); })
-            .attr("r", 2.0);
-
-    
+            .attr("cx", function (d) {
+                if (numeric.includes(scatterX)) {
+                    return xScale(parseFloat(d[scatterX]));
+                } else if (catergorical.includes(scatterX)) {
+                    return xScale(d[scatterX]) + xScale.bandwidth() / 2;
+                }
+            })
+            .attr("cy", function (d) {
+                if (numeric.includes(scatterY)) {
+                    return yScale(parseFloat(d[scatterY]));
+                } else if (catergorical.includes(scatterY)) {
+                    return yScale(d[scatterY]) + yScale.bandwidth() / 2;
+                }
+            })
+            .attr("r", 2.0);    
     }
 
     function drawBarPlot(selectedGroup) {
