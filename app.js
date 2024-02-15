@@ -52,42 +52,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     let isSideways = false;
     let isCategorical = true;
     let isScatter = false;
-    let scatterX = "generation"
-    let scatterY= "generation"
-
-    // When the button is changed, run the updateChart function
-    d3.select("#selectButtonScatter").on("change", function (event, d) {
-        isCategorical = false;
-        isScatter = true;
-        // recover the option that has been chosen
-        const selectedOption = d3.select(this).property("value");
-
-        // Check which radio button is selected
-        const xAxisRadio = document.querySelector('input[name="axis"][value="X"]');
-
-        if (xAxisRadio.checked) {
-            scatterX = selectedOption;
-        } else {
-            scatterY = selectedOption;
-        }
-
-        // run the updateChart function with this selected option
-        update(selectedOption);
-    });
-
-    d3.select("#scatterPlotDropdownButton").on("click", function (event, d) {
-        isCategorical = false;
-        isScatter = true;
-        // recover the option that has been chosen
-        const selectedOption = d3.select("#selectButtonScatter").property("value");
-
-        // Check which radio button is selected
-        scatterX = selectedOption;
-        scatterY = selectedOption;
-
-        // run the updateChart function with this selected option
-        update(selectedOption);
-    })
+    let scatterX = "Generation"
+    let scatterY= "Generation"
 
     // Add event listeners to the radio buttons
     d3.selectAll('input[name="axis"]').on("change", function () {
@@ -109,15 +75,52 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     d3.select("#nBin").on("input", function () {
         TICKS = +this.value
         isCategorical = false;
-        update(d3.select("#selectButtonNum").property("value"))
+        update(d3.select("#selectButtonField").property("value"))
     });
 
+
+    function changeDropdownDisplay(selectedOption) {
+        if (isScatter) {
+            console.log("scatter");
+            // Show radio buttons and hide number of bins input
+            document.getElementById('radioButtons').style.display = 'block';
+            document.getElementById('numberOfBins').style.display = 'none';
+
+            // Check which radio button is selected
+            const xAxisRadio = document.querySelector('input[name="axis"][value="X"]');
+            if (xAxisRadio.checked) {
+                scatterX = selectedOption;
+            } else {
+                scatterY = selectedOption;
+            }
+        } else {
+            console.log("not")
+            if (numeric.includes(selectedOption))
+                document.getElementById('numberOfBins').style.display = 'block';
+            else document.getElementById('numberOfBins').style.display = 'none';
+            document.getElementById('radioButtons').style.display = 'none';
+        }
+    }
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButtonField").on("change", function (event, d) {
+        const selectedOption = d3.select(this).property("value")
+
+        // Check which radio button is selected
+        //scatterX = selectedOption;
+        //scatterY = selectedOption;
+
+        changeDropdownDisplay(selectedOption);
+
+        update(selectedOption)
+    })
 
     // TOGGLE SCATTER PLOT FUNCTIONALITY
     d3.select('#togglePlotType').on("change", function () {
         isScatter = !isScatter;
 
         const selectedOption = d3.select("#selectButtonField").property("value");
+        changeDropdownDisplay(selectedOption)
         update(selectedOption);
     })
 
@@ -151,7 +154,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .range(d3.schemeDark2);
 
 
-    update("generationCounts")
+    update("Generation")
 
     // A function that update the chart
     function update(selectedGroup) {
