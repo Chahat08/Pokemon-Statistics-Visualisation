@@ -85,4 +85,14 @@ h1 {
 }
 
 
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #3c5aa6; /* Blue color when toggle is on */
+}
 
+.custom-switch .custom-control-label::before {
+    background-color: #3c5aa6; /* Blue color by default */
+}
+
+.custom-switch .custom-control-label::after {
+    background-color: #ffffff; /* White color for the circle */
+}
