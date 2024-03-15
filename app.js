@@ -39,28 +39,9 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
 
     const allFields = catergorical.concat(numeric)
-    
-
+   
     // add the options to the button
-    d3.select("#selectButtonCat")
-        .selectAll('myOptions')
-        .data(catergorical)
-        .enter()
-        .append('option')
-        .text(function (d) { return d; }) // text showed in the menu
-        .attr("value", function (d) { return d + "Counts"; }) // corresponding value returned by the button
-
-    // add the options to the button
-    d3.select("#selectButtonNum")
-        .selectAll('myOptions')
-        .data(numeric)
-        .enter()
-        .append('option')
-        .text(function (d) { return d; }) // text showed in the menu
-        .attr("value", function (d) { return d; }) // corresponding value returned by the button
-
-    // add the options to the button
-    d3.select("#selectButtonScatter")
+    d3.select("#selectButtonField")
         .selectAll('myOptions')
         .data(allFields)
         .enter()
@@ -71,72 +52,8 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     let isSideways = false;
     let isCategorical = true;
     let isScatter = false;
-    let scatterX = "generation"
-    let scatterY= "generation"
-
-    // When the button is changed, run the updateChart function
-    d3.select("#selectButtonCat").on("change", function (event, d) {
-        isCategorical = true; isScatter = false;
-        // recover the option that has been chosen
-        const selectedOption = d3.select(this).property("value")
-        // run the updateChart function with this selected option
-        update(selectedOption)
-    })
-
-    d3.select("#barChartDropdownButton").on("click", function (event, d) {
-        isCategorical = true; isScatter = false;
-        const selectedOption = d3.select("#selectButtonCat").property("value")
-        update(selectedOption)
-    })
-
-    // When the button is changed, run the updateChart function
-    d3.select("#selectButtonNum").on("change", function (event, d) {
-        isCategorical = false; isScatter = false;
-        // recover the option that has been chosen
-        const selectedOption = d3.select(this).property("value")
-        // run the updateChart function with this selected option
-        update(selectedOption)
-    })
-
-    d3.select("#histogramDropdownButton").on("click", function (event, d) {
-        isCategorical = false; isScatter = false;
-        const selectedOption = d3.select("#selectButtonNum").property("value")
-        update(selectedOption)
-    })
-
-    // When the button is changed, run the updateChart function
-    d3.select("#selectButtonScatter").on("change", function (event, d) {
-        isCategorical = false;
-        isScatter = true;
-        // recover the option that has been chosen
-        const selectedOption = d3.select(this).property("value");
-
-        // Check which radio button is selected
-        const xAxisRadio = document.querySelector('input[name="axis"][value="X"]');
-
-        if (xAxisRadio.checked) {
-            scatterX = selectedOption;
-        } else {
-            scatterY = selectedOption;
-        }
-
-        // run the updateChart function with this selected option
-        update(selectedOption);
-    });
-
-    d3.select("#scatterPlotDropdownButton").on("click", function (event, d) {
-        isCategorical = false;
-        isScatter = true;
-        // recover the option that has been chosen
-        const selectedOption = d3.select("#selectButtonScatter").property("value");
-
-        // Check which radio button is selected
-        scatterX = selectedOption;
-        scatterY = selectedOption;
-
-        // run the updateChart function with this selected option
-        update(selectedOption);
-    })
+    let scatterX = "Generation"
+    let scatterY= "Generation"
 
     // Add event listeners to the radio buttons
     d3.selectAll('input[name="axis"]').on("change", function () {
@@ -158,13 +75,59 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
     d3.select("#nBin").on("input", function () {
         TICKS = +this.value
         isCategorical = false;
-        update(d3.select("#selectButtonNum").property("value"))
+        update(d3.select("#selectButtonField").property("value"))
     });
+
+
+    function changeDropdownDisplay(selectedOption) {
+        if (isScatter) {
+            console.log("scatter");
+            // Show radio buttons and hide number of bins input
+            document.getElementById('radioButtons').style.display = 'block';
+            document.getElementById('numberOfBins').style.display = 'none';
+
+            // Check which radio button is selected
+            const xAxisRadio = document.querySelector('input[name="axis"][value="X"]');
+            if (xAxisRadio.checked) {
+                scatterX = selectedOption;
+            } else {
+                scatterY = selectedOption;
+            }
+        } else {
+            console.log("not")
+            if (numeric.includes(selectedOption))
+                document.getElementById('numberOfBins').style.display = 'block';
+            else document.getElementById('numberOfBins').style.display = 'none';
+            document.getElementById('radioButtons').style.display = 'none';
+        }
+    }
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButtonField").on("change", function (event, d) {
+        const selectedOption = d3.select(this).property("value")
+
+        // Check which radio button is selected
+        //scatterX = selectedOption;
+        //scatterY = selectedOption;
+
+        changeDropdownDisplay(selectedOption);
+
+        update(selectedOption)
+    })
+
+    // TOGGLE SCATTER PLOT FUNCTIONALITY
+    d3.select('#togglePlotType').on("change", function () {
+        isScatter = !isScatter;
+
+        const selectedOption = d3.select("#selectButtonField").property("value");
+        changeDropdownDisplay(selectedOption)
+        update(selectedOption);
+    })
 
     // TOGGLE ORIENTATION FUNCTIONALITY
 
     // Add an event listener to the toggle button
-    d3.select("#toggleButton").on("click", function () {
+    d3.select("#toggleOrientation").on("change", function () {
         // Toggle the orientation state
         isSideways = !isSideways;
 
@@ -173,9 +136,9 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         }
 
         // Call the update function with the current selected option
-        const selectedOption = isCategorical ? d3.select("#selectButtonCat").property("value") : d3.select("#selectButtonNum").property("value");
+        const selectedOption = d3.select("#selectButtonField").property("value");
         update(selectedOption);
-    });
+    })
 
     // A color scale: one color for each group
     const colorCategorical = d3.scaleOrdinal()
@@ -191,12 +154,17 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
         .range(d3.schemeDark2);
 
 
-    update("generationCounts")
+    update("Generation")
 
     // A function that update the chart
     function update(selectedGroup) {
 
         //svg.select("*").remove()
+
+        if (numeric.includes(selectedGroup))
+            isCategorical = false;
+        else isCategorical = true;
+
         addAxesLabels(selectedGroup) // add the axes labels
         svg.selectAll(".xAxis, .yAxis").remove(); // remove the axes values
         
@@ -315,7 +283,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
 
     function drawBarPlot(selectedGroup) {
         // update the title of the graph to show that it is a bar plot
-        title.text(`Bar Chart of ${!isSideways ? `${selectedGroup.slice(0, -6)} (x-axis) vs Frequency (y-axis)` : `Frequency (x-axis) vs ${selectedGroup.slice(0, -6)}(y-axis)`}`);
+        title.text(`Bar Chart of ${!isSideways ? `${selectedGroup} (x-axis) vs Frequency (y-axis)` : `Frequency (x-axis) vs ${selectedGroup}(y-axis)`}`);
 
         if (selectedGroup.indexOf("Legendary") !== -1) selectedGroup = "is_legendaryCounts";
         else if (selectedGroup.indexOf("Generation") !== -1) selectedGroup = "generationCounts";
@@ -550,7 +518,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("class", "x-axis-label")
             .attr("transform", `translate(${width / 2}, ${height + margin.top - 20})`)
             .style("text-anchor", "middle")
-            .text(isScatter ? (scatterX) : (isSideways ? "Frequency" : (isCategorical ? selectedGroup.slice(0, -6) : selectedGroup)))
+            .text(isScatter ? (scatterX) : (isSideways ? "Frequency" : selectedGroup))
             .attr("dy", "1em");
 
         // Update y-axis label to "Frequency"
@@ -562,7 +530,7 @@ d3.csv("data/pokemon_data.csv").then(function (data) {
             .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text(isScatter ? (scatterY) : (isSideways ? (isCategorical ? selectedGroup.slice(0, -6) : selectedGroup) : "Frequency"));
+            .text(isScatter ? (scatterY) : (isSideways ? selectedGroup : "Frequency"));
     }
 
 })
